@@ -260,27 +260,27 @@ class _Form_RegisterState extends State<Form_Register> {
                                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                     }else{
 
-                                      bool registerSuccess = await dataProvider.connectAPIRegister(regsitername, registeremail, registerpassword, registerphone);
-                                      if(registerSuccess){
-                                        registeremailController.clear();
-                                        registerpassController.clear();
-                                        registerphoneController.clear();
-                                        registernameController.clear();
-                                        var snackBar = SnackBar(
-                                          content: Consumer<HttpProvider>(
-                                              builder: (context, value, child) => Text(value.regisdata["message"]?? "message not found")),
-                                          duration: Duration(seconds: 1),
-                                        );
-                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                        Navigator.pop(context);
-                                      }else{
-                                        var snackBar = SnackBar(
-                                          content: Consumer<HttpProvider>(
-                                              builder: (context, value, child) => Text(value.regisdata[""]?? "error")),
-                                          duration: Duration(seconds: 1),
-                                        );
-                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                      }
+                                      // bool registerSuccess = await dataProvider.connectAPIRegister(regsitername, registeremail, registerpassword, registerphone);
+                                      // if(registerSuccess){
+                                      //   registeremailController.clear();
+                                      //   registerpassController.clear();
+                                      //   registerphoneController.clear();
+                                      //   registernameController.clear();
+                                      //   var snackBar = SnackBar(
+                                      //     content: Consumer<HttpProvider>(
+                                      //         builder: (context, value, child) => Text(value.regisdata["message"]?? "message not found")),
+                                      //     duration: Duration(seconds: 1),
+                                      //   );
+                                      //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                      //   Navigator.pop(context);
+                                      // }else{
+                                      //   var snackBar = SnackBar(
+                                      //     content: Consumer<HttpProvider>(
+                                      //         builder: (context, value, child) => Text(value.regisdata[""]?? "error")),
+                                      //     duration: Duration(seconds: 1),
+                                      //   );
+                                      //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                      // }
 
                                     }
                                 

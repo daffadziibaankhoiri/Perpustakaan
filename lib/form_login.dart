@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:neulibrary/form-register.dart';
-import 'form_home.dart';
 import 'form_main.dart';
 import 'package:neulibrary/Models/Http_provider.dart';
 import 'package:provider/provider.dart';
@@ -10,11 +9,24 @@ import 'form_detail.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // bool userIsLoggedIn = await SharedPref.isLoggedIn();
-  runApp( ChangeNotifierProvider(
-    create: (context) => HttpProvider(),
-    child: Form_Login()
-  ));
+  runApp(MyApp());
 }
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => HttpProvider(),
+      child: MaterialApp(
+        theme: ThemeData(
+          brightness: Brightness.dark,
+        ),
+        home: Form_Login(),
+      ),
+    );
+  }
+}
+
 
 class Form_Login extends StatefulWidget {
   const Form_Login({super.key});
@@ -24,47 +36,61 @@ class Form_Login extends StatefulWidget {
 }
 
 class _Form_LoginState extends State<Form_Login> {
+  HttpProvider? dataProvider;
   @override
   void initState() {
     super.initState();
-    // checkLoginStatus();
+    Future.microtask(() => checkLoginStatus());
   }
-  String loginemail = "if@else.co";
-  String loginpassword = "123456";
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Simpan referensi ke provider
+    dataProvider = Provider.of<HttpProvider>(context);
+  }
+  String loginemail = "";
+  String loginpassword = "";
+  String Token = "";
+  int user_id = 0;
+  int Id = 0;
   void setPrefs() async {
     final simpanan = await SharedPreferences.getInstance();
-    simpanan.setString('email', loginemail);
-    String? tesShared = simpanan.getString('email');
-    print(tesShared);
+    simpanan.setString('token', Token);
+    simpanan.setInt('user_id', user_id);
+    String? tesShared = simpanan.getString('token');
+    int? id_user = simpanan.getInt('user_id');
+    print('isi id $id_user');
+    print("isi token $tesShared");
   }
   bool show = true;
   final TextEditingController loginemailController = TextEditingController();
   final TextEditingController loginpassController = TextEditingController();
-  // Future<void> checkLoginStatus(BuildContext context) async {
-  //   bool userIsLoggedIn = await SharedPref.isLoggedIn();
-  //   if (userIsLoggedIn) {
-  //     String? token = await SharedPref.getStringValue("accessToken");
-  //     var snackBar = SnackBar(
-  //       content: Consumer<HttpProvider>(
-  //           builder: (context, value, child) => Text(token??" ada token" )),
-  //       duration: Duration(seconds: 1),
-  //     );
-  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  //     print("token ada tapi tidak redirect");
-  //     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Form_Main()));
-  //   }else{
-  //     String? token = await SharedPref.getStringValue("accessToken");
-  //     var snackBar = SnackBar(
-  //       content: Consumer<HttpProvider>(
-  //           builder: (context, value, child) => Text(token??"tidak ada token" )),
-  //       duration: Duration(seconds: 1),
-  //     );
-  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  //     print("gagal login");
-  //   }
-  // }
+  void checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    // Cek apakah token ada atau tidak, dan apakah token itu valid.
+    // Anda mungkin perlu memeriksa ke server apakah token masih valid jika aplikasi Anda memerlukannya.
+    if(token != null){
+      print("token untuk auto login : $token");
+
+      // Jika token ada dan tidak kosong, arahkan ke Form_Main
+      navigateToMain();
+    }
+    // Jika tidak ada token, aplikasi akan tetap di halaman login
+  }
+
+  void navigateToMain() {
+    print("ternavigasi");
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => Form_Main())
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
+    // final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();//
     // checkLoginStatus(context);
     final dataProvider = Provider.of<HttpProvider>(context, listen: false);
     return MaterialApp(
@@ -72,7 +98,7 @@ class _Form_LoginState extends State<Form_Login> {
         brightness: Brightness.dark
       ),
       home: Scaffold(
-
+        // key: _scaffoldKey,
         appBar: AppBar(
 
           backgroundColor: Color(0xff6B240C),
@@ -97,6 +123,7 @@ class _Form_LoginState extends State<Form_Login> {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
                 padding: const EdgeInsets.all(5.0),
@@ -135,12 +162,12 @@ class _Form_LoginState extends State<Form_Login> {
                             color: Colors.black
                           ),
                           keyboardType: TextInputType.emailAddress,
-                          cursorColor: Colors.blueAccent,
+                          cursorColor: Color(0xff6B240C),
                           decoration: InputDecoration(
                               isDense: true,
                               icon: Icon(Icons.email, size: 30,color: Colors.black,),
                               // hintText: "Email",
-                              labelText: "Email",
+                              labelText: "Username",
 
                               border: OutlineInputBorder(
                                 borderSide: BorderSide(
@@ -176,7 +203,7 @@ class _Form_LoginState extends State<Form_Login> {
                           ),
                           obscureText: show,
                           keyboardType: TextInputType.text,
-                          cursorColor: Colors.blueAccent,
+                          cursorColor: Color(0xff6B240C),
                           decoration: InputDecoration(
                               isDense: true,
                               suffixIcon: IconButton(
@@ -207,7 +234,7 @@ class _Form_LoginState extends State<Form_Login> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(left: 130, right: 130, top: 30),
+                        padding: const EdgeInsets.only(left: 110, right: 110, top: 30),
                         child: Builder(
                             builder: (context) {
                               return ElevatedButton(
@@ -215,10 +242,9 @@ class _Form_LoginState extends State<Form_Login> {
                                       backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
                                   ),
                                   onPressed: () async {
-                                    Navigator.pushReplacement(context,
-                                        MaterialPageRoute(builder: (context) => Form_Main())
-                                    );
-                                   setPrefs();
+                                    // Navigator.pushReplacement(context,
+                                    //     MaterialPageRoute(builder: (context) => Form_Main())
+                                    // );
                                     if(loginemail.isEmpty){
                                       var snackBar = SnackBar(
                                         content: Text("Email is required"),
@@ -236,9 +262,15 @@ class _Form_LoginState extends State<Form_Login> {
                                       // loginpassController.clear();
                                       bool loginSucces = await dataProvider.connectAPILogin(loginemail, loginpassword);
                                       if(loginSucces){
+                                        Token = dataProvider.logindata["authorization"]["token"];
+                                        user_id = dataProvider.logindata["user"]["id"];
+                                        print(Token);
+                                        setPrefs();
+                                        //
                                         var snackBar = SnackBar(
                                           content: Consumer<HttpProvider>(
-                                              builder: (context, value, child) => Text(value.logindata["access_token"] ?? "Access token not found")),
+                                              builder: (context, value, child) =>
+                                                  Text("Berhasil Login")),
                                           duration: Duration(seconds: 1),
                                         );
                                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -248,7 +280,7 @@ class _Form_LoginState extends State<Form_Login> {
                                       }else{
                                         var snackBar = SnackBar(
                                           content: Consumer<HttpProvider>(
-                                              builder: (context, value, child) => Text(value.logindata["error"]?? "error")),
+                                              builder: (context, value, child) => Text(value.logindata["error"]?? "Username atau Password Salah")),
                                           duration: Duration(seconds: 1),
                                         );
                                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -264,6 +296,7 @@ class _Form_LoginState extends State<Form_Login> {
 
                                   child: const Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       Icon(Icons.login_outlined, color: Colors.white,),
                                       SizedBox(width: 10),
@@ -284,30 +317,7 @@ class _Form_LoginState extends State<Form_Login> {
                       SizedBox(
                         height: 5,
                       ),
-                      Builder(
-                        builder: (context) {
-                          return InkWell(
-                            onTap: (){
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => Form_Register())
-                              );
-                            },
-                            child: Text(
-                              "Register Now",
-                              style: TextStyle(
-                                color: Color(0xff994D1C),
-                                decoration: TextDecoration.underline,
-                                decorationColor: Color(0xff994D1C)
-                              ),
 
-                            ),
-                          );
-                        }
-                      ),
-                      SizedBox(
-                        height: 5,
-                      ),
                     ],
                   ),
                 ),
