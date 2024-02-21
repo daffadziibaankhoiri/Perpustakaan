@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'SharedPref.dart';
 import 'Kategori.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class HttpProvider extends ChangeNotifier{
@@ -18,6 +17,7 @@ class HttpProvider extends ChangeNotifier{
   Map<String, dynamic> _datapostcart = {};
   List<dynamic> _datakeranjang = [];
   List<dynamic> _datahistory = [];
+  List<dynamic> _datahistorydipinjam = [];
 
 
 
@@ -29,6 +29,7 @@ class HttpProvider extends ChangeNotifier{
   List<dynamic> get kategoridata => _datakategori;
   List<dynamic> get keranjangdata => _datakeranjang;
   List<dynamic> get historydata => _datahistory;
+  List<dynamic> get historydipinjamdata => _datahistorydipinjam;
   Map<String, dynamic> get barcodedata => _databarcode;
   Map<String, dynamic> get bukudetaildata => _datadetailbuku;
   Map<String, dynamic> get postbukudata => _datapostbuku;
@@ -44,6 +45,7 @@ class HttpProvider extends ChangeNotifier{
   int get jumlahDatabukudetail => _datadetailbuku.length;
   int get jumlahDataKeranjang => _datakeranjang.length;
   int get jumlahDataHistory => _datahistory.length;
+  int get jumlahDataHistoryDipinjam => _datahistorydipinjam.length;
 
   void resetDetailData() {
     _datadetailbuku = {};
@@ -57,15 +59,23 @@ class HttpProvider extends ChangeNotifier{
     _datapostcart = {};
     notifyListeners();
   }
+  void resetCartData(){
+    _datakeranjang = [];
+    notifyListeners();
+  }
+  void resetHistoryDipinjam(){
+    _datahistorydipinjam = [];
+    notifyListeners();
+  }
 
   Future<bool> connectAPIGetAnggota() async {
     _getdataanggota = {};
     final simpanan = await SharedPreferences.getInstance();
-    int? id_user = simpanan.getInt('user_id');
+    int? idUser = simpanan.getInt('user_id');
     // int id_anggota = simpanan.setString(key, value)
     // simpanan.remove('user_id');
-    print('user id '+id_user.toString());
-    Uri Anggotaurl = Uri.parse("https://magang-neu.neumediradev.my.id/api/anggota/$id_user");
+    print('user id $idUser');
+    Uri Anggotaurl = Uri.parse("https://magang-neu.neumediradev.my.id/api/anggota/$idUser");
     print(Anggotaurl);
     try {
       var response = await http.get(Anggotaurl);
@@ -86,10 +96,10 @@ class HttpProvider extends ChangeNotifier{
       return false; // Login failed
     }
   }
-  Future<bool> connectAPIIsiDataAnggota(String nama,String telepon, String email, String alamat, String tanggal_lahir,String jenis_kelamin) async {
+  Future<bool> connectAPIIsiDataAnggota(String nama,String telepon, String email, String alamat, String tanggalLahir,String jenisKelamin) async {
     final simpanan = await SharedPreferences.getInstance();
-    int? id_user = simpanan.getInt("user_id");
-    print(id_user.toString());
+    int? idUser = simpanan.getInt("user_id");
+    print(idUser.toString());
     Uri Anggotaurl = Uri.parse("https://magang-neu.neumediradev.my.id/api/anggota/tambah");
 
     try{
@@ -99,13 +109,13 @@ class HttpProvider extends ChangeNotifier{
         //   'Content-Type' : 'application/json'
         // },
         body: {
-          "id_user" : id_user.toString(),
+          "id_user" : idUser.toString(),
           "nama" : nama,
-          "telpon" : "08"+telepon,
+          "telpon" : "08$telepon",
           "email" : email,
           "alamat" : alamat,
-          "tanggal_lahir" : tanggal_lahir,
-          "jenis_kelamin" : jenis_kelamin,
+          "tanggal_lahir" : tanggalLahir,
+          "jenis_kelamin" : jenisKelamin,
         },
 
       );
@@ -245,7 +255,7 @@ class HttpProvider extends ChangeNotifier{
         );
         if(response.statusCode == 200){
           _databarcode = json.decode(response.body);
-          print("detail buku baarcode ($barcode): "+_databarcode.toString());
+          print("detail buku baarcode ($barcode): $_databarcode");
           return true;
         }else{
           return false;
@@ -277,41 +287,37 @@ class HttpProvider extends ChangeNotifier{
     resetAddCartData();
     Uri addUrl = Uri.parse("https://magang-neu.neumediradev.my.id/api/pinjam/addToCart");
     final simpanan = await SharedPreferences.getInstance();
-    int id_anggota = simpanan.getInt('id_anggota')??0;
-    if(id_anggota != null){
-      try{
-        var response = await http.post(
-            addUrl,
-            body: {
-              'id_anggota' : id_anggota.toString(),
-              'id_buku' : Bukuid.toString(),
-            }
+    int idAnggota = simpanan.getInt('id_anggota')??0;
+    try{
+      var response = await http.post(
+          addUrl,
+          body: {
+            'id_anggota' : idAnggota.toString(),
+            'id_buku' : Bukuid.toString(),
+          }
 
-        );
-      if(response.statusCode == 200){
-        _datapostbuku = json.decode(response.body);
-        print(_datapostbuku);
-        notifyListeners();
-        return true;
-      }else{
-        _datapostbuku = json.decode(response.body);
-        print(response.statusCode);
-        return false;
-      }
-      }catch(error){
-        print("error : $error");
-        return false;
-      }
+      );
+    if(response.statusCode == 200){
+      _datapostbuku = json.decode(response.body);
+      print(_datapostbuku);
+      notifyListeners();
+      return true;
     }else{
-      print("id_anggota tidak ditemukan");
+      _datapostbuku = json.decode(response.body);
+      print(response.statusCode);
       return false;
     }
-
+    }catch(error){
+      print("error : $error");
+      return false;
+    }
+  
   }
   Future<List> connectAPIgetCart() async {
+    resetCartData();
     final simpanan = await SharedPreferences.getInstance();
-    int id_anggota = simpanan.getInt('id_anggota')??0;
-    Uri searchurl = Uri.parse("https://magang-neu.neumediradev.my.id/api/pinjam/getKeranjang/$id_anggota");
+    int idAnggota = simpanan.getInt('id_anggota')??0;
+    Uri searchurl = Uri.parse("https://magang-neu.neumediradev.my.id/api/pinjam/getKeranjang/$idAnggota");
 
     print(searchurl);
     var response = await http.get(searchurl);
@@ -331,10 +337,10 @@ class HttpProvider extends ChangeNotifier{
     }
 
   }
-  Future<List> connectAPIgetHistory() async {
+  Future<List> connectAPIgetHistoryDikembalikan() async {
     final simpanan = await SharedPreferences.getInstance();
-    int id_anggota = simpanan.getInt('id_anggota')??0;
-    Uri searchurl = Uri.parse("https://magang-neu.neumediradev.my.id/api/pinjam/getHistory/$id_anggota");
+    int idAnggota = simpanan.getInt('id_anggota')??0;
+    Uri searchurl = Uri.parse("https://magang-neu.neumediradev.my.id/api/pinjam/getHistoryDikembalikan/$idAnggota");
 
     print(searchurl);
     var response = await http.get(searchurl);
@@ -353,8 +359,31 @@ class HttpProvider extends ChangeNotifier{
     }
 
   }
-  Future<bool> connectAPIHapusItemCart(int id_cart) async {
-    Uri barcodeUrl = Uri.parse("https://magang-neu.neumediradev.my.id/api/pinjam/hapusBukuFromCart/$id_cart");
+  Future<List> connectAPIgetHistoryDipinjam() async {
+    resetHistoryDipinjam();
+    final simpanan = await SharedPreferences.getInstance();
+    int idAnggota = simpanan.getInt('id_anggota')??0;
+    Uri searchurl = Uri.parse("https://magang-neu.neumediradev.my.id/api/pinjam/getHistoryDipinjam/$idAnggota");
+
+    print(searchurl);
+    var response = await http.get(searchurl);
+    print(response.statusCode);
+    if(response.statusCode == 200){
+      _datahistorydipinjam = json.decode(response.body);
+
+      notifyListeners();
+      return _datahistorydipinjam;
+    }
+    else{
+      // _databuku = (json.decode(response.body))[""];
+      print(response.body);
+      // notifyListeners();
+      return [];
+    }
+
+  }
+  Future<bool> connectAPIHapusItemCart(int idCart) async {
+    Uri barcodeUrl = Uri.parse("https://magang-neu.neumediradev.my.id/api/pinjam/hapusBukuFromCart/$idCart");
     try{
       var response = await http.delete(barcodeUrl,
       );

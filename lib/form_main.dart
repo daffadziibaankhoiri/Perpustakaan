@@ -4,8 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:neulibrary/Models/Http_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'tes.dart';
-import 'package:neulibrary/Models/Book.dart';
 import 'form_detail.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'form_history.dart';
@@ -39,9 +37,10 @@ class _Form_MainState extends State<Form_Main> {
     simpanan.remove('token');
     print("isi token : ${simpanan.getString('token')}");
     simpanan.remove('user_id');
-    print("isi id user : "+simpanan.getInt('id').toString());
+    print("isi id user : ${simpanan.getInt('id')}");
     simpanan.remove('id_anggota');
   }
+
   String? dropdownValue;
   String? KategoriStr;
   int kategoriValue = 0;
@@ -60,7 +59,7 @@ class _Form_MainState extends State<Form_Main> {
   TextEditingController emailController = TextEditingController();
   TextEditingController alamatController = TextEditingController();
   TextEditingController tanggallahirController = TextEditingController();
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   void onItemTapped(int index){
     setState(() {
       selected_index = index;
@@ -76,6 +75,7 @@ class _Form_MainState extends State<Form_Main> {
   @override
   void initState(){
     super.initState();
+
     _futureBooks = Provider.of<HttpProvider>(context, listen: false).connectAPISearchBook(search, kategoriValue);
     Provider.of<HttpProvider>(context, listen: false).connectAPIkategori();
   }
@@ -109,16 +109,35 @@ class _Form_MainState extends State<Form_Main> {
       precacheImage(NetworkImage(book['image']), context);
     }
   }
-  Future<void> _reloadCarts() async {
-    // Perbarui state _futureBooks dengan data terbaru
-    setState(() {
-      _futureCarts = Provider.of<HttpProvider>(context, listen: false).connectAPIgetCart();
-    });
-  }
   void getCart(){
     setState(() {
       _futureCarts = Provider.of<HttpProvider>(context, listen: false).connectAPIgetCart();
     });
+  }
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Pengguna tidak bisa menutup dialog secara manual
+      builder: (BuildContext context) {
+        return const Dialog(
+          backgroundColor: Color(0xFFF5CCA0),
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Color(0xff994D1C),),
+                SizedBox(width: 20),
+                Text("Loading, Mohon Tunggu...\nJika Terlalu lama...\nKembali dan perbarui keranjang\nDan Konfirmasi ke Admin", style: TextStyle(color: Color(0xff994D1C)),),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  void _hideLoadingDialog(BuildContext context) {
+    Navigator.of(context).pop(); // Menutup dialog
   }
   @override
   Widget build(BuildContext context) {
@@ -128,15 +147,11 @@ class _Form_MainState extends State<Form_Main> {
       if (isSuccess) {
         int id = Provider.of<HttpProvider>(context, listen: false).barcodedata['id_buku'];
         // Pastikan 'id' ada dalam respons dan valid sebelum navigasi
-        if (id != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Form_Detail(bookId: id)),
-          );
-        } else {
-          // Handle ketika 'id' tidak ditemukan atau tidak valid
-        }
-      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Form_Detail(bookId: id)),
+        );
+            } else {
         // Handle kegagalan pemanggilan API
       }
     }
@@ -167,8 +182,8 @@ class _Form_MainState extends State<Form_Main> {
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: Color(0xff6B240C),
-          title: Text(
+          backgroundColor: const Color(0xff6B240C),
+          title: const Text(
           "NeuLibrary",
           style: TextStyle(
             color: Colors.white,
@@ -180,7 +195,7 @@ class _Form_MainState extends State<Form_Main> {
             IconButton(
                 onPressed:
                 scanBarcode,
-                icon: Icon(Icons.document_scanner_outlined, color: Colors.white,))
+                icon: const Icon(Icons.document_scanner_outlined, color: Colors.white,))
           ],
         ),
         body: PageView(
@@ -189,8 +204,9 @@ class _Form_MainState extends State<Form_Main> {
             setState(() {
               selected_index = index;
             });
-            print("hasil barcode : "+resultBarcode);
+            print("hasil barcode : $resultBarcode");
             if(index == 0){
+              FocusScope.of(context).unfocus();
               dataProvider.connectAPISearchBook(search,kategoriValue);
               await dataProvider.connectAPIkategori();
               bool get = await dataProvider.connectAPIGetAnggota();
@@ -200,13 +216,13 @@ class _Form_MainState extends State<Form_Main> {
                 setPrefs();
 
               }else{
-                print("isi data anggota"+dataProvider.getanggotadata['message'].toString());
+                print("isi data anggota${dataProvider.getanggotadata['message']}");
                 if(dataProvider.getanggotadata['message']=="Anggota not found"){
                   index = 2;
                   setState(() {
                     selected_index = index;
                     _pageController.jumpToPage(index);
-                    var snackbar = SnackBar(content: Text("Silahkan isi profile anda terlebih dahulu lalu simpan"), duration: Duration(seconds: 1),);
+                    var snackbar = const SnackBar(content: Text("Silahkan isi profile anda terlebih dahulu lalu simpan"), duration: Duration(seconds: 1),);
                     ScaffoldMessenger.of(context).showSnackBar(snackbar);
                   });
                   print("anggota tidak ada");
@@ -216,9 +232,10 @@ class _Form_MainState extends State<Form_Main> {
               }
             }else if (index == 1){
               getCart();
+              FocusScope.of(context).unfocus();
             }
             else if(index == 2){
-
+              FocusScope.of(context).unfocus();
              bool get = await dataProvider.connectAPIGetAnggota();
              if(get){
                print(dataProvider.getanggotadata);
@@ -249,10 +266,10 @@ class _Form_MainState extends State<Form_Main> {
           },
           children: [
             Container(
-              color: Color(0xFFF5CCA0),
+              color: const Color(0xFFF5CCA0),
               child: Column(
                 children: [
-                  Padding(padding: EdgeInsets.only(left: 20,right: 20,top: 7),
+                  Padding(padding: const EdgeInsets.only(left: 20,right: 20,top: 10),
                     child: TextField(
                       // autocorrect: false,
                       // autofocus: false,
@@ -264,7 +281,7 @@ class _Form_MainState extends State<Form_Main> {
 
                       keyboardType: TextInputType.text,
                       cursorColor: Colors.brown,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                           isDense: true,
                           prefixIcon: Icon(Icons.search, size: 30,color: Colors.black,),
                           // hintText: "Search . . . ",
@@ -284,7 +301,7 @@ class _Form_MainState extends State<Form_Main> {
 
                           )
                       ),
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.black
                       ),
                       // obscuringCharacter: '₯',
@@ -296,28 +313,28 @@ class _Form_MainState extends State<Form_Main> {
                         padding: const EdgeInsets.only(left: 20, right: 20, top: 5),
                         child: Theme(
                           data: Theme.of(context).copyWith(
-                              canvasColor: Color(0xFFF5CCA0)
+                              canvasColor: const Color(0xFFF5CCA0)
                           ),
                           child: Container(
-                            color: Color(0xFFF5CCA0),
+                            color: const Color(0xFFF5CCA0),
                             width: double.maxFinite,
                             height: 56,
                             child: DropdownButtonFormField<int>(
                                 value: kategoriValue,
-                                icon:  Icon(Icons.arrow_drop_down_outlined, color: Colors.black,),
+                                icon:  const Icon(Icons.arrow_drop_down_outlined, color: Colors.black,),
                                 elevation: 16,
                                 style: const TextStyle(color: Color(0xff994D1C)),
                                 decoration: InputDecoration(
                                     filled: true,
-                                    fillColor:  Color(0xFFF5CCA0),
+                                    fillColor:  const Color(0xFFF5CCA0),
                                     border: OutlineInputBorder(
 
                                         borderRadius: BorderRadius.circular(15),
-                                        borderSide: BorderSide(color: Color(0xff994D1C) )
+                                        borderSide: const BorderSide(color: Color(0xff994D1C) )
                                     ),
-                                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xff994D1C)),borderRadius: BorderRadius.circular(15),)
+                                    focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xff994D1C)),borderRadius: BorderRadius.circular(15),)
                                 ),
-                                focusColor: Color(0xFFF5CCA0),
+                                focusColor: const Color(0xFFF5CCA0),
 
 
                                 onChanged: (int? newValue) {
@@ -329,19 +346,17 @@ class _Form_MainState extends State<Form_Main> {
                                 },
 
                                 items: [
-                                    DropdownMenuItem<int>(
+                                    const DropdownMenuItem<int>(
                                       value: 0, // Nilai untuk "Pilih Kategori"
                                         child: Text("Semua Kategori", style: TextStyle(color: Colors.black)),
-                                        )
-                                        ]..addAll(
-                                        dataProvider.kategoridata.map<DropdownMenuItem<int>>((dynamic value) {
+                                        ), ...dataProvider.kategoridata.map<DropdownMenuItem<int>>((dynamic value) {
                                         Kategori kategori = value as Kategori;
                                         return DropdownMenuItem<int>(
                                         value: kategori.id,
-                                        child: Text(kategori.nama, style: TextStyle(color: Colors.black)),
+                                        child: Text(kategori.nama, style: const TextStyle(color: Colors.black)),
                                     );
-                                }).toList(),
-                            ),
+                                })
+                                        ],
                           ),
                         ),
                         )
@@ -351,7 +366,7 @@ class _Form_MainState extends State<Form_Main> {
                   ),
                   Expanded(
                     child: Padding(
-                        padding: EdgeInsets.only(top: 4, left: 10,right: 10, bottom: 10),
+                        padding: const EdgeInsets.only(top: 4, left: 10,right: 10, bottom: 10),
                       child: Container(
                           // color: Colors.red,
                         child: Column(
@@ -361,15 +376,15 @@ class _Form_MainState extends State<Form_Main> {
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return Center(
+                                  return const Center(
                                       child: Padding(
-                                        padding: const EdgeInsets.only(top: 200),
+                                        padding: EdgeInsets.only(top: 200),
                                         child: CircularProgressIndicator( color: Color(0xff6B240C),
                                           backgroundColor: Color(0xFFF5CCA0),),
                                       )); // Menampilkan spinner saat data sedang dimuat
                                 } else if (snapshot.hasError) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 180),
+                                  return const Padding(
+                                    padding: EdgeInsets.only(top: 180),
                                     child: Center(child: Text("Tidak ada Koneksi Internet", style: TextStyle(color: Colors.black),)),
                                   ); // Menampilkan pesan error
                                 } else if (snapshot.hasData) {
@@ -384,13 +399,13 @@ class _Form_MainState extends State<Form_Main> {
                                       child: Padding(
                                     padding: const EdgeInsets.all(1.0),
                                     child: RefreshIndicator(
-                                      color: Color(0xff6B240C),
-                                      backgroundColor: Color(0xFFF5CCA0),
+                                      color: const Color(0xff6B240C),
+                                      backgroundColor: const Color(0xFFF5CCA0),
                                       onRefresh: () async {
                                          _reloadBooks();
                                       },
                                       child: GridView.builder(
-                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                             crossAxisCount: 1,
                                             crossAxisSpacing: 0,
                                             mainAxisSpacing: 0,
@@ -405,6 +420,7 @@ class _Form_MainState extends State<Form_Main> {
                                                 var selectedBookId = books[index]["id"];
 
                                                 // Lakukan navigasi ke halaman detail dengan mengirimkan ID buku
+                                                FocusScope.of(context).unfocus();
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(builder: (context) => Form_Detail(bookId: selectedBookId,)),
@@ -423,11 +439,20 @@ class _Form_MainState extends State<Form_Main> {
                                                     children:[
                                                       Padding(
                                                         padding: const EdgeInsets.all(6.0),
-                                                        child: Container(
+                                                        child: SizedBox(
                                                             height: 120,
                                                             width: 80,
-                                                            child: Image(
-                                                                image: NetworkImage("${books[index]["image"]}")
+                                                            child: CachedNetworkImage(
+                                                              imageUrl: "${books[index]["image"]}",
+                                                              placeholder: (context, url) => const Center(
+                                                                child: SizedBox(
+                                                                  width: 30, // Atur lebar
+                                                                  height: 30, // Atur tinggi
+                                                                  child: CircularProgressIndicator(color: Color(0xff6B240C)),
+                                                                ),
+                                                              ),
+                                                              errorWidget: (context, url, error) => const Icon(Icons.error),
+                                                              // fit: BoxFit.cover,
                                                             )
                                                         ),
                                                       ),
@@ -436,25 +461,34 @@ class _Form_MainState extends State<Form_Main> {
                                                           crossAxisAlignment: CrossAxisAlignment.start,
 
                                                         children: [
-                                                          SizedBox(
+                                                          const SizedBox(
                                                             height: 5,
                                                           ),
 
                                                           Text(
                                                             books[index]["judul"]??"judul",maxLines: 2,overflow: TextOverflow.ellipsis,
 
-                                                            textAlign: TextAlign.left,style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold, height: 1),),
-                                                          Text("By "+books[index]["pengarang"]??"pengarang", maxLines: 1,overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 15)),
+                                                            textAlign: TextAlign.left,style: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold, height: 1),),
+                                                          Text("By "+books[index]["pengarang"], maxLines: 1,overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 15)),
                                                           Text(
                                                             books[index]["sinopsis"]??"sinopsis",
                                                             textAlign: TextAlign.left,
-                                                            style: TextStyle(
+                                                            style: const TextStyle(
                                                                 color: Colors.black,
                                                                 fontSize: 11
                                                             )
                                                             ,overflow: TextOverflow.ellipsis,
                                                             maxLines: 3,
-                                                            softWrap: true,),
+                                                            softWrap: true,
+                                                          ),
+                                                          Text(
+                                                            "Dibaca : ${books[index]["dipinjam"]} kali",
+                                                              style: const TextStyle(
+                                                                  color: Colors.black,
+                                                                  fontSize: 13,
+                                                                fontWeight: FontWeight.bold
+                                                              )
+                                                          )
                                                            ],
                                                         ),
                                                       ),
@@ -471,7 +505,7 @@ class _Form_MainState extends State<Form_Main> {
                                   );
 
                                   } else {
-                                    return Center(
+                                    return const Center(
                                       child: Text("No data available", style: TextStyle(color: Colors.black),),
                                     );
                                   }
@@ -493,10 +527,10 @@ class _Form_MainState extends State<Form_Main> {
               ),
             ),
             Container(
-              color: Color(0xFFF5CCA0),
+              color: const Color(0xFFF5CCA0),
               child: Column(
                 children: [
-                  Text(
+                  const Text(
                     "Your Cart",
 
                     style: TextStyle(
@@ -507,7 +541,7 @@ class _Form_MainState extends State<Form_Main> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(top: 1, left: 7,right: 7, bottom: 0),
+                      padding: const EdgeInsets.only(top: 1, left: 7,right: 7, bottom: 0),
                       child: Container(
                         // color: Colors.red,
                         child: Column(
@@ -517,15 +551,15 @@ class _Form_MainState extends State<Form_Main> {
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
-                                    return Center(
+                                    return const Center(
                                         child: Padding(
-                                          padding: const EdgeInsets.only(top: 200),
+                                          padding: EdgeInsets.only(top: 200),
                                           child: CircularProgressIndicator( color: Color(0xff6B240C),
                                             backgroundColor: Color(0xFFF5CCA0),),
                                         )); // Menampilkan spinner saat data sedang dimuat
                                   } else if (snapshot.hasError) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(top: 180),
+                                    return const Padding(
+                                      padding: EdgeInsets.only(top: 180),
                                       child: Center(child: Text("Tidak ada Koneksi Internet", style: TextStyle(color: Colors.black),)),
                                     ); // Mempilkan pesan error
                                   } else if (snapshot.hasData) {
@@ -542,13 +576,13 @@ class _Form_MainState extends State<Form_Main> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(0.5),
                                           child: RefreshIndicator(
-                                            color: Color(0xff6B240C),
-                                            backgroundColor: Color(0xFFF5CCA0),
+                                            color: const Color(0xff6B240C),
+                                            backgroundColor: const Color(0xFFF5CCA0),
                                             onRefresh: () async {
                                               getCart();
                                             },
                                             child: GridView.builder(
-                                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                                     crossAxisCount: 1,
                                                     crossAxisSpacing: 0,
                                                     mainAxisSpacing: 0,
@@ -576,12 +610,21 @@ class _Form_MainState extends State<Form_Main> {
                                                               child: Container(
                                                                   height: 120,
                                                                   width: 80,
-                                                                  decoration: BoxDecoration(
+                                                                  decoration: const BoxDecoration(
                                                                     borderRadius: BorderRadius.all(Radius.circular(20)), // Ini akan memberikan border radius pada container
                                                                     // Tambahkan properti lain seperti color, border, boxShadow, dll, jika diperlukan
                                                                   ),
-                                                                  child: Image(
-                                                                      image: NetworkImage("${books[index]["buku"]["image"]??""}")
+                                                                  child: CachedNetworkImage(
+                                                                    imageUrl: "${books[index]["buku"]["image"]}",
+                                                                    placeholder: (context, url) => const Center(
+                                                                      child: SizedBox(
+                                                                        width: 30, // Atur lebar
+                                                                        height: 30, // Atur tinggi
+                                                                        child: CircularProgressIndicator(color: Color(0xff6B240C)),
+                                                                      ),
+                                                                    ),
+                                                                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                                                                    // fit: BoxFit.cover,
                                                                   )
                                                               ),
                                                             ),
@@ -590,26 +633,26 @@ class _Form_MainState extends State<Form_Main> {
                                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                                 children: [
-                                                                  SizedBox(
+                                                                  const SizedBox(
                                                                     height: 5,
                                                                   ),
 
                                                                   Text(
                                                                     books[index]["buku"]["judul"]??"judul",maxLines: 2,overflow: TextOverflow.ellipsis,
 
-                                                                    textAlign: TextAlign.left,style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold, height: 1),),
-                                                                  Text("By "+books[index]["buku"]["pengarang"]??"pengarang",maxLines: 1,overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 15)),
+                                                                    textAlign: TextAlign.left,style: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold, height: 1),),
+                                                                  Text("By "+books[index]["buku"]["pengarang"],maxLines: 1,overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 15)),
                                                                   Text(
                                                                     books[index]["buku"]["sinopsis"]??"sinopsis",
                                                                     textAlign: TextAlign.left,
-                                                                    style: TextStyle(
+                                                                    style: const TextStyle(
                                                                         color: Colors.black,
                                                                         fontSize: 11
                                                                     )
                                                                     ,overflow: TextOverflow.ellipsis,
                                                                     maxLines: 2,
                                                                     softWrap: true,),
-                                                                  Text("Ditambahkan : ${formattedDate} ", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),),
+                                                                  Text("Ditambahkan : $formattedDate ", style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),),
 
                                                                 ],
                                                               ),
@@ -620,12 +663,12 @@ class _Form_MainState extends State<Form_Main> {
                                                                 return IconButton(onPressed: (){
                                                                   showDialog(context: context, builder: (context){
                                                                     return AlertDialog(
-                                                                      backgroundColor: Color(0xFFF5CCA0),
-                                                                      title: Text("Hapus", style: TextStyle(
+                                                                      backgroundColor: const Color(0xFFF5CCA0),
+                                                                      title: const Text("Hapus", style: TextStyle(
                                                                           color: Colors.black
                                                                       ),
                                                                       ),
-                                                                      content: Text("Hapus Buku \"${books[index]["buku"]["judul"]}\" dari Keranjang anda ?",style: TextStyle(
+                                                                      content: Text("Hapus Buku \"${books[index]["buku"]["judul"]}\" dari Keranjang anda ?",style: const TextStyle(
                                                                           color: Colors.black,
                                                                           fontSize: 16
                                                                       ),
@@ -633,13 +676,13 @@ class _Form_MainState extends State<Form_Main> {
                                                                       actions: [
                                                                         ElevatedButton(
                                                                           style: ButtonStyle(
-                                                                              backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                                                              backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                                                                           ),
                                                                           onPressed: (){
                                                                             Navigator.of(context).pop();
                                                                           },
 
-                                                                          child: Text(
+                                                                          child: const Text(
                                                                             "NO",
                                                                             style: TextStyle(
                                                                                 color: Colors.white,
@@ -649,14 +692,14 @@ class _Form_MainState extends State<Form_Main> {
 
                                                                         ), ElevatedButton(
                                                                             style: ButtonStyle(
-                                                                                backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                                                                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                                                                             ),
                                                                             onPressed: () async {
                                                                               bool hapus = await dataProvider.connectAPIHapusItemCart(books[index]['id']);
                                                                               if(hapus == true){
                                                                                 var snackBar = SnackBar(
                                                                                   content: Text(responseHapusCart["message"]),
-                                                                                  duration: Duration(seconds: 1),
+                                                                                  duration: const Duration(seconds: 1),
                                                                                 );
                                                                                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                                                                 Navigator.of(context).pop();
@@ -664,12 +707,12 @@ class _Form_MainState extends State<Form_Main> {
                                                                               }else{
                                                                                 var snackBar = SnackBar(
                                                                                   content: Text(responseHapusCart["message"]?? "Error menghapus item"),
-                                                                                  duration: Duration(seconds: 1),
+                                                                                  duration: const Duration(seconds: 1),
                                                                                 );
                                                                                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                                                                 Navigator.of(context).pop();
                                                                               }
-                                                                            }, child: Text(
+                                                                            }, child: const Text(
                                                                           "YES",
                                                                           style: TextStyle(
                                                                               color: Colors.white,
@@ -680,8 +723,7 @@ class _Form_MainState extends State<Form_Main> {
                                                                       ],
                                                                     );
                                                                   });
-                                                                  ;
-                                                                }, icon: Icon(Icons.delete_outline_outlined, color: Colors.red,size: 25,));
+                                                                }, icon: const Icon(Icons.delete_outline_outlined, color: Colors.red,size: 25,));
                                                               },
                                                             )
                                                           ]
@@ -696,7 +738,7 @@ class _Form_MainState extends State<Form_Main> {
                                     );
 
                                   } else {
-                                    return Center(
+                                    return const Center(
                                       child: Text("No data available", style: TextStyle(color: Colors.black),),
                                     );
                                   }
@@ -723,17 +765,17 @@ class _Form_MainState extends State<Form_Main> {
                         print(responsePost['message']);
                         return  ElevatedButton(
                           style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                              backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                           ),
                           onPressed: () async {
                             showDialog(context: context, builder: (context){
                               return AlertDialog(
-                                backgroundColor: Color(0xFFF5CCA0),
-                                title: Text("Pinjam", style: TextStyle(
+                                backgroundColor: const Color(0xFFF5CCA0),
+                                title: const Text("Pinjam", style: TextStyle(
                                     color: Colors.black
                                 ),
                                 ),
-                                content: Text("Pinjam Semua buku yang ada dikeranjang?",style: TextStyle(
+                                content: const Text("Pinjam Semua buku yang ada dikeranjang?",style: TextStyle(
                                     color: Colors.black,
                                     fontSize: 16
                                 ),
@@ -741,13 +783,13 @@ class _Form_MainState extends State<Form_Main> {
                                 actions: [
                                   ElevatedButton(
                                     style: ButtonStyle(
-                                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                        backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                                     ),
                                     onPressed: (){
                                       Navigator.of(context).pop();
                                     },
 
-                                    child: Text(
+                                    child: const Text(
                                       "NO",
                                       style: TextStyle(
                                           color: Colors.white,
@@ -756,52 +798,62 @@ class _Form_MainState extends State<Form_Main> {
                                     ),
 
                                   ), ElevatedButton(
-                                      style: ButtonStyle(
-                                          backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
-                                      ),
-                                      onPressed: () async {
-                                        if(isiCart.isNotEmpty){
-                                          bool pinjam = await dataProvider.connectAPIProsesCart();
-                                          if(pinjam == true){
-                                            var snackBar = SnackBar(
-                                              content: Text(responsePost["message"]),
-                                              duration: Duration(seconds: 1),
-                                            );
-                                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                            getCart();
-                                            Navigator.of(context).pop();
+                                    style: ButtonStyle(
+                                      backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C)),
+                                    ),
+                                    onPressed: () async {
+                                      if (isiCart.isNotEmpty) {
+                                        setState(() {
+                                          _showLoadingDialog(context);
+                                        });
 
-                                          }else{
-                                            var snackBar = SnackBar(
-                                              content: Text(responsePost["message"]?? "Error saat peminjaman"),
-                                              duration: Duration(seconds: 1),
-                                            );
-                                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                            getCart();
-                                            Navigator.of(context).pop();
-                                          }
-                                        }else{
+                                        bool pinjam = await dataProvider.connectAPIProsesCart();
+
+                                        if(pinjam) {
+                                          // Proses berhasil
                                           var snackBar = SnackBar(
-                                            content: Text("Tidak ada buku di keranjang anda"),
-                                            duration: Duration(seconds: 1),
+                                            content: Text(responsePost["message"]),
+                                            duration: const Duration(seconds: 3),
                                           );
                                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                          setState(() {
+                                            _hideLoadingDialog(context);
+                                          });
+                                          Navigator.of(context).pop();
+                                          getCart();
+                                        } else {
+                                          // Proses gagal
+                                          var snackBar = SnackBar(
+                                            content: Text(responsePost["message"] ?? "Error saat peminjaman"),
+                                            duration: const Duration(seconds: 1),
+                                          );
+                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                          setState(() {
+                                            _hideLoadingDialog(context);
+                                          });
                                           Navigator.of(context).pop();
                                         }
 
-                                      }, child: Text(
-                                    "YES",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold
+
+                                      } else {
+                                        var snackBar = const SnackBar(
+                                          content: Text("Tidak ada buku di keranjang anda"),
+                                          duration: Duration(seconds: 1),
+                                        );
+                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        Navigator.of(context).pop();
+                                      }
+                                    },
+                                    child: const Text(
+                                      "YES",
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                     ),
                                   )
-                                  ),
                                 ],
                               );
                             });
                           },
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min, // Ini akan membuat Row hanya sebesar kontennya
                             children: <Widget>[
                               Icon(Icons.shopping_cart_checkout_outlined, color: Colors.white),
@@ -820,7 +872,7 @@ class _Form_MainState extends State<Form_Main> {
               ),
             ),
             Container(
-              color: Color(0xFFF5CCA0),
+              color: const Color(0xFFF5CCA0),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -833,14 +885,14 @@ class _Form_MainState extends State<Form_Main> {
                           padding: const EdgeInsets.only(left: 15,right: 20, top: 5,bottom: 10),
                           child: ElevatedButton(
                               onPressed: (){
-                                // removetoken();
+                                FocusScope.of(context).unfocus();
                                 Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context)=> Form_History())
+                                    MaterialPageRoute(builder: (context)=> const Form_History())
                                 );
                               },
                               style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                               ),
 
                               child: const Row(
@@ -867,18 +919,18 @@ class _Form_MainState extends State<Form_Main> {
                               onPressed: (){
                                 showDialog(context: context, builder: (context){
                                   return AlertDialog(
-                                    backgroundColor: Color(0xFFF5CCA0),
-                                    title: Text("Logout", style: TextStyle(color: Colors.black),),
-                                    content: Text("Logout dari akun ini?",style: TextStyle(color: Colors.black)),
+                                    backgroundColor: const Color(0xFFF5CCA0),
+                                    title: const Text("Logout", style: TextStyle(color: Colors.black),),
+                                    content: const Text("Logout dari akun ini?",style: TextStyle(color: Colors.black)),
                                     actions: [
                                       ElevatedButton(onPressed: (){
                                         Navigator.of(context).pop();
                                       },
                                         style: ButtonStyle(
-                                            backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                            backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                                         ),
 
-                                        child: Text(
+                                        child: const Text(
                                           "NO",
                                           style: TextStyle(
                                               color: Colors.white,
@@ -888,38 +940,38 @@ class _Form_MainState extends State<Form_Main> {
 
                                       ), ElevatedButton(
                                           style: ButtonStyle(
-                                              backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                              backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                                           ),
                                           onPressed: () async {
-                                        bool logout = await dataProvider.connectAPILogout();
-                                        print("loading...");
-                                        if(logout == true){
-                                          print("berhasil logout");
-                                          var snackBar = SnackBar(
-                                            content: Consumer<HttpProvider>(
-                                                builder: (context, value, child) =>
-                                                    Text(value.logoutdata["message"] ?? "")),
-                                            duration: Duration(seconds: 1),
-                                          );
-                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        // bool logout = await dataProvider.connectAPILogout();
+                                        // print("loading...");
+                                        // if(logout == true){
+                                        //   print("berhasil logout");
+                                        //   var snackBar = SnackBar(
+                                        //     content: Consumer<HttpProvider>(
+                                        //         builder: (context, value, child) =>
+                                        //             Text(value.logoutdata["message"] ?? "")),
+                                        //     duration: Duration(seconds: 1),
+                                        //   );
+                                        //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                           removetoken();
                                           Navigator.of(context).pop();
                                           Navigator.pushReplacement(
                                               context,
-                                              MaterialPageRoute(builder: (context) => Form_Login())
+                                              MaterialPageRoute(builder: (context) => const Form_Login())
                                           );
-                                        }else{
-                                          // var snackBar = SnackBar(
-                                          //   content: Consumer<HttpProvider>(
-                                          //       builder: (context, value, child) =>
-                                          //           Text(value.logoutdata["message"]?? "User Unauthorizad")),
-                                          //   duration: Duration(seconds: 1),
-                                          // );
-                                          // ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                          print("gagal logout");
-                                          Navigator.of(context).pop();
-                                        }
-                                      }, child: Text(
+                                        // }else{
+                                        //   // var snackBar = SnackBar(
+                                        //   //   content: Consumer<HttpProvider>(
+                                        //   //       builder: (context, value, child) =>
+                                        //   //           Text(value.logoutdata["message"]?? "User Unauthorizad")),
+                                        //   //   duration: Duration(seconds: 1),
+                                        //   // );
+                                        //   // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        //   print("gagal logout");
+                                        //   Navigator.of(context).pop();
+                                        // }
+                                      }, child: const Text(
                                         "YES",
                                         style: TextStyle(
                                             color: Colors.white,
@@ -932,7 +984,7 @@ class _Form_MainState extends State<Form_Main> {
                                 });
                               },
                               style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                               ),
 
                               child: const Row(
@@ -956,7 +1008,7 @@ class _Form_MainState extends State<Form_Main> {
                       ],
                     ),
 
-                    Text(
+                    const Text(
                       "Profile",
 
                       style: TextStyle(
@@ -965,7 +1017,7 @@ class _Form_MainState extends State<Form_Main> {
                         fontSize: 25
                       ),
                     ),
-                    Padding(padding: EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 10),
+                    Padding(padding: const EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 10),
                       child: TextField(
                         controller: namaController,
                         onChanged: (name){
@@ -973,12 +1025,12 @@ class _Form_MainState extends State<Form_Main> {
                               nama = name;
                           });
                         },
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.black
                         ),
                         keyboardType: TextInputType.name,
-                        cursorColor:Color(0xff994D1C),
-                        decoration: InputDecoration(
+                        cursorColor:const Color(0xff994D1C),
+                        decoration: const InputDecoration(
                             isDense: true,
                             // icon: Icon(Icons.person, size: 30,color: Colors.black,),
                             // hintText: "Fullname",
@@ -1000,7 +1052,7 @@ class _Form_MainState extends State<Form_Main> {
                         // obscuringCharacter: '₯',
                       ),
                     ),
-                    Padding(padding: EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 10),
+                    Padding(padding: const EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 10),
                       child: TextField(
                         controller: teleponController,
                         onChanged: (txtphone){
@@ -1008,13 +1060,13 @@ class _Form_MainState extends State<Form_Main> {
                               telepon = txtphone;
                           });
                         },
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.black
                         ),
                         keyboardType: TextInputType.number,
-                        cursorColor:Color(0xff994D1C),
+                        cursorColor:const Color(0xff994D1C),
 
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                             isDense: true,
                             // icon: Icon(Icons.phone, size: 30,color: Colors.black,),
                             // hintText: "Phone Number",
@@ -1041,7 +1093,7 @@ class _Form_MainState extends State<Form_Main> {
                         // obscuringCharacter: '₯',
                       ),
                     ),
-                    Padding(padding: EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 10),
+                    Padding(padding: const EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 10),
                       child: TextField(
                         controller: emailController,
                         onChanged: (txtemail){
@@ -1049,12 +1101,12 @@ class _Form_MainState extends State<Form_Main> {
                             email = txtemail;
                           });
                         },
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.black
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        cursorColor:Color(0xff994D1C),
-                        decoration: InputDecoration(
+                        cursorColor:const Color(0xff994D1C),
+                        decoration: const InputDecoration(
                             isDense: true,
                             // icon: Icon(Icons.email, size: 30,color: Colors.black,),
                             // hintText: "Email",
@@ -1077,7 +1129,7 @@ class _Form_MainState extends State<Form_Main> {
                       ),
                     ),
 
-                    Padding(padding: EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 10),
+                    Padding(padding: const EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 10),
                       child: TextField(
                         controller: alamatController,
                         onChanged: (txtalamat){
@@ -1085,13 +1137,13 @@ class _Form_MainState extends State<Form_Main> {
                             alamat = txtalamat;
                           });
                         },
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.black
                         ),
 
                         keyboardType: TextInputType.text,
-                        cursorColor:Color(0xff994D1C),
-                        decoration: InputDecoration(
+                        cursorColor:const Color(0xff994D1C),
+                        decoration: const InputDecoration(
                             isDense: true,
 
                             // icon: Icon(Icons.lock, size: 30,color: Colors.black,),
@@ -1112,17 +1164,17 @@ class _Form_MainState extends State<Form_Main> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: 30, right: 30, top: 7, bottom: 10),
+                      padding: const EdgeInsets.only(left: 30, right: 30, top: 7, bottom: 10),
                       child: Row(
                         children: [
                           Expanded(
                             // TextField untuk menampilkan tanggal lahir
                             child: TextField(
-                              style: TextStyle(
+                              style: const TextStyle(
                                   color: Colors.black
                               ),
                               controller: tanggallahirController, // Controller untuk tanggal lahir
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Tanggal Lahir',
                                 border: OutlineInputBorder(),
 
@@ -1137,7 +1189,7 @@ class _Form_MainState extends State<Form_Main> {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.calendar_today, color: Color(0xff994D1C),), // Ikon kalender
+                            icon: const Icon(Icons.calendar_today, color: Color(0xff994D1C),), // Ikon kalender
                             onPressed: () async {
                               // Fungsi untuk memicu date picker
                               DateTime? pickedDate = await showDatePicker(
@@ -1149,7 +1201,7 @@ class _Form_MainState extends State<Form_Main> {
                                 builder: (BuildContext context, Widget? child) {
                                   return Theme(
                                     data: ThemeData.light().copyWith(
-                                      colorScheme: ColorScheme.light(
+                                      colorScheme: const ColorScheme.light(
                                         primary: Color(0xff6B240C), // warna header
                                         onPrimary: Colors.white, // warna tulisan di header
                                         surface:  Color(0xFFF5CCA0), // warna latar kalender
@@ -1180,24 +1232,24 @@ class _Form_MainState extends State<Form_Main> {
                       padding: const EdgeInsets.only(left: 30, right: 30, top: 7),
                       child: Theme(
                         data: Theme.of(context).copyWith(
-                          canvasColor: Color(0xFFF5CCA0)
+                          canvasColor: const Color(0xFFF5CCA0)
                         ),
                         child: Container(
-                          color: Color(0xFFF5CCA0),
+                          color: const Color(0xFFF5CCA0),
                           width: double.maxFinite,
                           child: DropdownButtonFormField<String>(
                             value: dropdownValue,
-                            icon:  Icon(Icons.arrow_drop_down_outlined, color: Colors.black,),
+                            icon:  const Icon(Icons.arrow_drop_down_outlined, color: Colors.black,),
                             elevation: 16,
                             style: const TextStyle(color: Colors.deepPurple),
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor:  Color(0xFFF5CCA0),
+                              fillColor:  const Color(0xFFF5CCA0),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.black )
+                                borderSide: const BorderSide(color: Colors.black )
                               ),
-                                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xff994D1C)),borderRadius: BorderRadius.circular(15),)
+                                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xff994D1C)),borderRadius: BorderRadius.circular(15),)
                             ),
                             onChanged: (String? newValue) {
                               setState(() {
@@ -1208,7 +1260,7 @@ class _Form_MainState extends State<Form_Main> {
                             items: kelamin.map<DropdownMenuItem<String>>((String value) {
                               return DropdownMenuItem<String>(
                                 value: value,
-                                child: Text(value, style: TextStyle(color: Colors.black),),
+                                child: Text(value, style: const TextStyle(color: Colors.black),),
                               );
                             }).toList(),
                           ),
@@ -1219,12 +1271,12 @@ class _Form_MainState extends State<Form_Main> {
                       padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 80.0),
                       child: ElevatedButton(
                         style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                            backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                         ),
                         onPressed: () async {
                           bool SimpanAnggota = await dataProvider.connectAPIIsiDataAnggota(nama, telepon, email, alamat, tanggal_lahir, dropdownValue??"");
                           if(SimpanAnggota){
-                            var snackBar = SnackBar(
+                            var snackBar = const SnackBar(
                               content: Text("Berhasil disimpan"),
                               duration: Duration(seconds: 1),
                             );
@@ -1232,7 +1284,7 @@ class _Form_MainState extends State<Form_Main> {
                             print(dataProvider.anggotadata);
 
                           }else{
-                            var snackBar = SnackBar(
+                            var snackBar = const SnackBar(
                               content: Text("gagal disimpan"),
                               duration: Duration(seconds: 1),
                             );
@@ -1240,7 +1292,7 @@ class _Form_MainState extends State<Form_Main> {
                             print(dataProvider.anggotadata);
                           }
                         },
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min, // Ini akan membuat Row hanya sebesar kontennya
                           children: <Widget>[
                             Icon(Icons.save, color: Colors.white),
@@ -1261,13 +1313,13 @@ class _Form_MainState extends State<Form_Main> {
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Color(0xff6B240C),
+          backgroundColor: const Color(0xff6B240C),
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white,
 
           currentIndex: selected_index,
           onTap: onItemTapped,
-          items: <BottomNavigationBarItem>[
+          items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined, color: Colors.white,),
                 label: "Home"

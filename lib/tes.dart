@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neulibrary/Models/Http_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:neulibrary/Models/Book.dart';
 class tesAPI extends StatefulWidget {
   const tesAPI({super.key});
 
@@ -18,8 +17,8 @@ class _tesAPIState extends State<tesAPI> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Color(0xff6B240C),
-        title: Text(
+        backgroundColor: const Color(0xff6B240C),
+        title: const Text(
           "NeuLibrary",
           style: TextStyle(
               color: Colors.white,
@@ -35,7 +34,7 @@ class _tesAPIState extends State<tesAPI> {
             builder: (context, snapshot) {
               if (snapshot.connectionState ==
                   ConnectionState.waiting) {
-                return Center(
+                return const Center(
                     child: CircularProgressIndicator()); // Menampilkan spinner saat data sedang dimuat
               } else if (snapshot.hasError) {
                 return Center(child: Text("Error: ${snapshot
@@ -49,7 +48,7 @@ class _tesAPIState extends State<tesAPI> {
                 print(books.length);
                 return
                   GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         crossAxisSpacing: 5,
                         mainAxisSpacing: 5,
@@ -69,10 +68,10 @@ class _tesAPIState extends State<tesAPI> {
                           color: Colors.grey,
                           child: Column(
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 height: 5,
                               ),
-                              Container(
+                              SizedBox(
                                 height: 130,
                                   width: 120,
                                   child: Image(
@@ -88,7 +87,7 @@ class _tesAPIState extends State<tesAPI> {
                       }
                   );
               } else {
-                return Center(
+                return const Center(
                   child: Text("No data available"),
                 );
               }

@@ -22,12 +22,12 @@ class _Form_RegisterState extends State<Form_Register> {
   @override
   Widget build(BuildContext context) {
     final dataProvider = Provider.of<HttpProvider>(context, listen: false);
-    precacheImage(AssetImage('Asset/bg.jpeg'), context);
+    precacheImage(const AssetImage('Asset/bg.jpeg'), context);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Color(0xff6B240C),
-        title: Text(
+        backgroundColor: const Color(0xff6B240C),
+        title: const Text(
           "NeuLibrary",
           style: TextStyle(
               color: Colors.white,
@@ -39,7 +39,7 @@ class _Form_RegisterState extends State<Form_Register> {
 
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
             image: DecorationImage(
                 image: AssetImage('Asset/bg.jpeg'),
                 fit: BoxFit.cover
@@ -70,7 +70,7 @@ class _Form_RegisterState extends State<Form_Register> {
                           ),
                         ),
                       ),
-                      Padding(padding: EdgeInsets.only(left: 30,right: 30,top: 7),
+                      Padding(padding: const EdgeInsets.only(left: 30,right: 30,top: 7),
                         child: TextField(
                           // autocorrect: false,
                           // autofocus: false,
@@ -83,12 +83,12 @@ class _Form_RegisterState extends State<Form_Register> {
                               regsitername = name;
                             });
                           },
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.black
                           ),
                           keyboardType: TextInputType.name,
-                          cursorColor:Color(0xff994D1C),
-                          decoration: InputDecoration(
+                          cursorColor:const Color(0xff994D1C),
+                          decoration: const InputDecoration(
                               isDense: true,
                               icon: Icon(Icons.person, size: 30,color: Colors.black,),
                               // hintText: "Fullname",
@@ -110,7 +110,7 @@ class _Form_RegisterState extends State<Form_Register> {
                           // obscuringCharacter: '₯',
                         ),
                       ),
-                      Padding(padding: EdgeInsets.only(left: 30,right: 30,top: 7),
+                      Padding(padding: const EdgeInsets.only(left: 30,right: 30,top: 7),
                         child: TextField(
                           // autocorrect: false,
                           // autofocus: false,
@@ -123,12 +123,12 @@ class _Form_RegisterState extends State<Form_Register> {
                               registerphone = phone;
                             });
                           },
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.black
                           ),
                           keyboardType: TextInputType.emailAddress,
-                          cursorColor:Color(0xff994D1C),
-                          decoration: InputDecoration(
+                          cursorColor:const Color(0xff994D1C),
+                          decoration: const InputDecoration(
                               isDense: true,
                               icon: Icon(Icons.phone, size: 30,color: Colors.black,),
                               // hintText: "Phone Number",
@@ -150,7 +150,7 @@ class _Form_RegisterState extends State<Form_Register> {
                           // obscuringCharacter: '₯',
                         ),
                       ),
-                      Padding(padding: EdgeInsets.only(left: 30,right: 30,top: 7),
+                      Padding(padding: const EdgeInsets.only(left: 30,right: 30,top: 7),
                         child: TextField(
                           // autocorrect: false,
                           // autofocus: false,
@@ -163,12 +163,12 @@ class _Form_RegisterState extends State<Form_Register> {
                               registeremail = email;
                             });
                           },
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.black
                           ),
                           keyboardType: TextInputType.emailAddress,
-                          cursorColor:Color(0xff994D1C),
-                          decoration: InputDecoration(
+                          cursorColor:const Color(0xff994D1C),
+                          decoration: const InputDecoration(
                               isDense: true,
                               icon: Icon(Icons.email, size: 30,color: Colors.black,),
                               // hintText: "Email",
@@ -191,7 +191,7 @@ class _Form_RegisterState extends State<Form_Register> {
                         ),
                       ),
                                 
-                      Padding(padding: EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 0),
+                      Padding(padding: const EdgeInsets.only(left: 30,right: 30,top: 7, bottom: 0),
                         child: TextField(
                           // autocorrect: false,
                           // autofocus: false,
@@ -203,12 +203,12 @@ class _Form_RegisterState extends State<Form_Register> {
                               registerpassword = password;
                             });
                           },
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.black
                           ),
                           obscureText: show,
                           keyboardType: TextInputType.text,
-                          cursorColor:Color(0xff994D1C),
+                          cursorColor:const Color(0xff994D1C),
                           decoration: InputDecoration(
                               isDense: true,
                               suffixIcon: IconButton(
@@ -220,14 +220,14 @@ class _Form_RegisterState extends State<Form_Register> {
                                   });
                                 },
                               ),
-                              icon: Icon(Icons.lock, size: 30,color: Colors.black,),
+                              icon: const Icon(Icons.lock, size: 30,color: Colors.black,),
                               // hintText: "Password",
                               labelText: "Password",
-                              border: OutlineInputBorder(
+                              border: const OutlineInputBorder(
                                 
                               ),
-                              labelStyle: TextStyle(color: Color(0xff6B240C)),
-                              focusedBorder: OutlineInputBorder(
+                              labelStyle: const TextStyle(color: Color(0xff6B240C)),
+                              focusedBorder: const OutlineInputBorder(
                                   borderSide: BorderSide(
                                       color: Color(0xff994D1C)
                                   )
@@ -243,17 +243,17 @@ class _Form_RegisterState extends State<Form_Register> {
                             builder: (context) {
                               return ElevatedButton(
                                   style: ButtonStyle(
-                                      backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                      backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                                   ),
                                   onPressed: () async {
                                     if(registeremail.isEmpty){
-                                      var snackBar = SnackBar(
+                                      var snackBar = const SnackBar(
                                         content: Text("Email is required"),
                                         duration: Duration(seconds: 1),
                                       );
                                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                     }else if(registerpassword.isEmpty){
-                                      var snackBar = SnackBar(
+                                      var snackBar = const SnackBar(
                                         content: Text("Password is required"),
                                         duration: Duration(seconds: 1),
                                       );
@@ -305,7 +305,7 @@ class _Form_RegisterState extends State<Form_Register> {
                             }
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 5,
                       ),
                       // Builder(

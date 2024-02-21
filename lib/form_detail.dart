@@ -1,10 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:neulibrary/Models/Http_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class Form_Detail extends StatefulWidget {
   final int bookId;
-   Form_Detail({Key? key, required this.bookId}) :  super(key : key);
+   const Form_Detail({super.key, required this.bookId});
 
   @override
   State<Form_Detail> createState() => _Form_DetailState();
@@ -28,13 +29,12 @@ class _Form_DetailState extends State<Form_Detail> {
   }
   @override
   Widget build(BuildContext context) {
-    final dataProvider = Provider.of<HttpProvider>(context, listen: false);
     print(widget.bookId);
     return Scaffold(
         appBar: AppBar(
         // automaticallyImplyLeading: false,
-        backgroundColor: Color(0xff6B240C),
-            title: Text(
+        backgroundColor: const Color(0xff6B240C),
+            title: const Text(
             "NeuLibrary",
               style: TextStyle(
               color: Colors.white,
@@ -44,7 +44,7 @@ class _Form_DetailState extends State<Form_Detail> {
             ),
         ),
       body: Container(
-        color: Color(0xFFF5CCA0),
+        color: const Color(0xFFF5CCA0),
         height: double.maxFinite,
         width: double.maxFinite,
         child: SingleChildScrollView( // Menggunakan SingleChildScrollView untuk mengizinkan scroll
@@ -52,23 +52,33 @@ class _Form_DetailState extends State<Form_Detail> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Container(
+              SizedBox(
                 width: double.maxFinite,
                 child: Column(
 
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(height: 10),
-                    Container(
+                    const SizedBox(height: 10),
+                    SizedBox(
                       height: 253,
                       width: 162,
 
                       child: Consumer<HttpProvider> (
                         builder: (context, dataProvider, child) {
                           final bukuDetail = dataProvider.bukudetaildata;
-                          return Image.network(
-                              bukuDetail["image"]??"https://upload.wikimedia.org/wikipedia/commons/thumbs/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png");
+                          return CachedNetworkImage(
+                          imageUrl: "${bukuDetail["image"]}",
+                          placeholder: (context, url) => const Center(
+                            child: SizedBox(
+                                width: 50, // Atur lebar
+                                height: 50, // Atur tinggi
+                                child: CircularProgressIndicator(color: Color(0xff6B240C)),
+                                ),
+                            ),
+                          errorWidget: (context, url, error) => const Icon(Icons.image_outlined, color: Color(0xff6B240C),),
+                          // fit: BoxFit.cover,
+                          );
                         },
                       ),
                     ),
@@ -81,7 +91,7 @@ class _Form_DetailState extends State<Form_Detail> {
                           child: Text(
                             bukuDetail["judul"]??"Loading ...",
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 25),
+                            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 25),
                           ),
                         );
                       },
@@ -91,7 +101,7 @@ class _Form_DetailState extends State<Form_Detail> {
                         final bukuDetail = dataProvider.bukudetaildata;
                         return Text(
                           "by ${bukuDetail["pengarang"]??"Loading ..."}",
-                          style: TextStyle(color: Colors.black, fontSize: 20),
+                          style: const TextStyle(color: Colors.black, fontSize: 20),
                         );
                       },
                     ),
@@ -100,7 +110,7 @@ class _Form_DetailState extends State<Form_Detail> {
                         final bukuDetail = dataProvider.bukudetaildata;
                         return Text(
                           "Tersedia : ${bukuDetail["jumlah"]??"Loading ..."}",
-                          style: TextStyle(color: Colors.black, fontSize: 15),
+                          style: const TextStyle(color: Colors.black, fontSize: 15),
                         );
                       },
                     ),
@@ -116,12 +126,12 @@ class _Form_DetailState extends State<Form_Detail> {
                             padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 70.0),
                             child: ElevatedButton(
                               style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all<Color>(Color(0xff994D1C))
+                                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                               ),
                               onPressed: () async {
                                 final simpanan = await SharedPreferences.getInstance();
-                                int id_anggota = simpanan.getInt('id_anggota')??0;
-                                if(id_anggota != 0){
+                                int idAnggota = simpanan.getInt('id_anggota')??0;
+                                if(idAnggota != 0){
                                   int? tersedia = int.tryParse(bukuDetail['jumlah'] ?? '0'); // '0' adalah nilai default jika `null`
                                   if(tersedia! > 0){
                                     bool add = await dataProvider.connectAPIAddToCart(widget.bookId);
@@ -130,7 +140,7 @@ class _Form_DetailState extends State<Form_Detail> {
                                         content: Consumer<HttpProvider>(
                                             builder: (context, value, child) =>
                                                 Text(value.postbukudata["message"]?? "tidak ada pesan")),
-                                        duration: Duration(seconds: 1),
+                                        duration: const Duration(seconds: 1),
                                       );
                                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                     }else{
@@ -138,19 +148,19 @@ class _Form_DetailState extends State<Form_Detail> {
                                         content: Consumer<HttpProvider>(
                                             builder: (context, value, child) =>
                                                 Text(value.postbukudata["message"]?? "tidak ada pesan")),
-                                        duration: Duration(seconds: 1),
+                                        duration: const Duration(seconds: 1),
                                       );
                                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                     }
                                   }else{
-                                    var snackBar = SnackBar(
+                                    var snackBar = const SnackBar(
                                       content: Text("Buku tidak tersedia"),
                                       duration: Duration(seconds: 1),
                                     );
                                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                   }
                                 }else{
-                                  var snackBar = SnackBar(
+                                  var snackBar = const SnackBar(
                                     content: Text("Lengkapi Profile kamu terlebih dahulu"),
                                     duration: Duration(seconds: 1),
                                   );
@@ -159,7 +169,7 @@ class _Form_DetailState extends State<Form_Detail> {
 
 
                               },
-                              child: Row(
+                              child: const Row(
                                 mainAxisSize: MainAxisSize.min, // Ini akan membuat Row hanya sebesar kontennya
                                 children: <Widget>[
                                   Icon(Icons.add_shopping_cart_outlined, color: Colors.white),
@@ -195,7 +205,7 @@ class _Form_DetailState extends State<Form_Detail> {
                         final bukuDetail = dataProvider.bukudetaildata;
                         return Text(
                           "Halaman : ${bukuDetail["halaman"]??"Loading ..."}",
-                          style: TextStyle(color: Colors.black, fontSize: 15),
+                          style: const TextStyle(color: Colors.black, fontSize: 15),
                         );
                       },
                     ),
@@ -204,7 +214,7 @@ class _Form_DetailState extends State<Form_Detail> {
                         final bukuDetail = dataProvider.bukudetaildata;
                         return  Text(
                           "Kategori : ${bukuDetail["kategori"]??"Loading ..."}",
-                          style: TextStyle(color: Colors.black, fontSize: 15),
+                          style: const TextStyle(color: Colors.black, fontSize: 15),
                         );
                       },
                     ),
@@ -213,7 +223,7 @@ class _Form_DetailState extends State<Form_Detail> {
                         final bukuDetail = dataProvider.bukudetaildata;
                         return Text(
                           "Penerbit : ${bukuDetail["penerbit"]??"Loading ..."}",
-                          style: TextStyle(color: Colors.black, fontSize: 15),
+                          style: const TextStyle(color: Colors.black, fontSize: 15),
                         );
                       },
                     ),
@@ -222,7 +232,7 @@ class _Form_DetailState extends State<Form_Detail> {
                         final bukuDetail = dataProvider.bukudetaildata;
                         return Text(
                           "Tahun Terbit : ${bukuDetail["tahun_terbit"]??"Loading ..."}",
-                          style: TextStyle(color: Colors.black, fontSize: 15),
+                          style: const TextStyle(color: Colors.black, fontSize: 15),
                         );
                       },
                     ),
@@ -234,7 +244,7 @@ class _Form_DetailState extends State<Form_Detail> {
                           child: Text(
                             "Sinopsis : ${bukuDetail["sinopsis"]??"Loading ..."}",
                             softWrap: true,
-                            style: TextStyle(color: Colors.black, fontSize: 15),
+                            style: const TextStyle(color: Colors.black, fontSize: 15),
                           ),
                         );
                       },
