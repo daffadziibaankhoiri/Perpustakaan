@@ -1,6 +1,8 @@
 # Neulibrary
 
-Aplikasi Flutter bertema perpustakaan
+Aplikasi Flutter bertema perpustakaan.
+ini adalah Front-end mobile dari backend yang sudah ada sebelumnya.
+Akun yang digunakan untuk login sudah dibaut terlebih dahulu oleh admin.
 
 ## Getting Started
 
