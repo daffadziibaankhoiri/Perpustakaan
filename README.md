@@ -1,6 +1,6 @@
-# neulibrary
+# Neulibrary
 
-A new Flutter project.
+Aplikasi Flutter bertema perpustakaan
 
 ## Getting Started
 
