@@ -409,7 +409,7 @@ class _Form_MainState extends State<Form_Main> {
                                             crossAxisCount: 1,
                                             crossAxisSpacing: 0,
                                             mainAxisSpacing: 0,
-                                            childAspectRatio: (120 / 45  )
+                                            childAspectRatio: (120 / 47  )
                                           ),
                                           itemCount: books.length,
 
@@ -432,7 +432,7 @@ class _Form_MainState extends State<Form_Main> {
 
                                                 color: Colors.white,
                                                 child: AspectRatio(
-                                                  aspectRatio: (120/45),
+                                                  aspectRatio: (120/47),
                                                   child: Row(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
 

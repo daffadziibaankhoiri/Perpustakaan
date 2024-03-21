@@ -4,10 +4,7 @@ import 'package:neulibrary/Models/Http_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
-}
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -90,6 +87,7 @@ class _Form_LoginState extends State<Form_Login> {
   Widget build(BuildContext context) {
     final dataProvider = Provider.of<HttpProvider>(context, listen: false);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark
       ),
@@ -239,7 +237,6 @@ class _Form_LoginState extends State<Form_Login> {
                                       backgroundColor: MaterialStateProperty.all<Color>(const Color(0xff994D1C))
                                   ),
                                   onPressed: () async {
-
                                     if(loginemail.isEmpty){
                                       var snackBar = const SnackBar(
                                         content: Text("Email is required"),
